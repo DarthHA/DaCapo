@@ -1,8 +1,31 @@
 ﻿This mod add Da Capo from Library of Ruina/Lobotomy Corporation.
-You can get it by no-hitting Moon Lord using only Magic Harp[i:494] and the Axe[i:1305].
+You can get it by defeating Moon Lord using only Magic Harp[i:494] and the Axe[i:1305].
+
+Changelog:
+v0.3
+-Bug fixed.
+v0.4
+-Reworked how the immune works.
+v0.5
+-Reduce the difficulty of the challenge.
+v0.6
+-Tweaked the effect of performance.
+v0.7
+-Switched Da Capo's left and right click attack.
 
 
 
 该模组加入了《脑叶公司》及《废墟图书馆》中的Da Capo武器。
-你可以通过仅使用魔法竖琴[i:494]和电音吉他斧[i:1305]无伤击败月球领主来获得。
+你可以通过仅使用魔法竖琴[i:494]和电音吉他斧[i:1305]击败月球领主来获得。
 
+更新日志:
+v0.3
+-修复bug。
+v0.4
+-重做了伤害免疫的算法。
+v0.5
+-降低挑战的难度。
+v0.6
+-优化了演出效果。
+v0.7
+-互换了Da Capo的左右键攻击方式。

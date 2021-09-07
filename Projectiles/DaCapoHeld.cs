@@ -1,10 +1,13 @@
-﻿using DaCapo.Items;
+﻿using DaCapo.Buffs;
+using DaCapo.Items;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using Terraria;
 using Terraria.Localization;
 using Terraria.ModLoader;
+using static DaCapo.DaCapoPlayer;
+
 namespace DaCapo.Projectiles
 {
     public class DaCapoHeld : ModProjectile
@@ -23,19 +26,15 @@ namespace DaCapo.Projectiles
             projectile.magic = true;
             projectile.width = 1;
             projectile.height = 1;
-            projectile.scale = 1f;
-            projectile.friendly = false;
-            projectile.hostile = false;
             projectile.timeLeft = 99999;
             projectile.tileCollide = false;
             projectile.ignoreWater = true;
-            projectile.damage = 10;
             projectile.penetrate = -1;
-           
         }
         public override void AI()
         {
             projectile.timeLeft = 9999;
+            Lighting.AddLight(projectile.Center, 0.9f, 0.9f, 0.9f);
             Player owner = Main.player[projectile.owner];
             if (!owner.active || owner.dead || owner.ghost)
             {
@@ -47,7 +46,7 @@ namespace DaCapo.Projectiles
                 projectile.Kill();
                 return;
             }
-            if (!owner.channel)
+            if (!RightClickChannel(owner))
             {
                 projectile.Kill();
                 return;
@@ -63,102 +62,114 @@ namespace DaCapo.Projectiles
 
             projectile.ai[0]++;
             DaCapoPlayer daCapoPlayer = owner.GetModPlayer<DaCapoPlayer>();
-            if (projectile.ai[0] < 220)          //准备时无敌
+            if (projectile.ai[0] < DaCapoTime.Movement1Begin)          //准备时无敌
             {
-                daCapoPlayer.MusicType = 0;
-                owner.GetModPlayer<DaCapoPlayer>().DaCapoImmune = 3;
+                daCapoPlayer.CurrentPlayingMusic = MusicType.Beginning;
+                owner.GetModPlayer<DaCapoPlayer>().DaCapoImmune = DamageType.All;
             }
-            else if (projectile.ai[0] < 620)     //第一乐章免疫弹幕
+            else if (projectile.ai[0] < DaCapoTime.Movement2Begin)     //第一乐章免疫弹幕
             {
-                daCapoPlayer.MusicType = 1;
-                owner.GetModPlayer<DaCapoPlayer>().DaCapoImmune = 2;
+                daCapoPlayer.CurrentPlayingMusic = MusicType.Movement1;
+                owner.GetModPlayer<DaCapoPlayer>().DaCapoImmune = DamageType.Projectile;
+                owner.AddBuff(ModContent.BuffType<DaCapoMovement1Buff>(), 2);
             }
-            else if (projectile.ai[0] < 1020)     //第二乐章免疫近战
+            else if (projectile.ai[0] < DaCapoTime.Movement3Begin)     //第二乐章免疫近战
             {
-                daCapoPlayer.MusicType = 2;
-                owner.GetModPlayer<DaCapoPlayer>().DaCapoImmune = 1;
+                daCapoPlayer.CurrentPlayingMusic = MusicType.Movement2;
+                owner.GetModPlayer<DaCapoPlayer>().DaCapoImmune = DamageType.Melee;
+                owner.AddBuff(ModContent.BuffType<DaCapoMovement2Buff>(), 2);
             }
-            else if (projectile.ai[0] < 1420)       //第三乐章免疫弹幕
+            else if (projectile.ai[0] < DaCapoTime.Movement4Begin)       //第三乐章免疫弹幕
             {
-                daCapoPlayer.MusicType = 3;
-                owner.GetModPlayer<DaCapoPlayer>().DaCapoImmune = 2;
-            } 
-            else if (projectile.ai[0] < 1820)        //第四乐章免疫近战
+                daCapoPlayer.CurrentPlayingMusic = MusicType.Movement3;
+                owner.GetModPlayer<DaCapoPlayer>().DaCapoImmune = DamageType.Projectile;
+                owner.AddBuff(ModContent.BuffType<DaCapoMovement3Buff>(), 2);
+            }
+            else if (projectile.ai[0] < DaCapoTime.FinalBegin)        //第四乐章免疫近战
             {
-                if (projectile.ai[0] < 1760)
-                {
-                    daCapoPlayer.MusicType = 4;
-                }
-                else
-                {
-                    daCapoPlayer.MusicType = 5;
-                }
-                owner.GetModPlayer<DaCapoPlayer>().DaCapoImmune = 1;
+                daCapoPlayer.CurrentPlayingMusic = MusicType.Movement4;
+                owner.GetModPlayer<DaCapoPlayer>().DaCapoImmune = DamageType.Melee;
+                owner.AddBuff(ModContent.BuffType<DaCapoMovement4Buff>(), 2);
             }
             else                                     //终曲全免
             {
-                owner.GetModPlayer<DaCapoPlayer>().DaCapoImmune = 3;
-                if (projectile.ai[0] < 1940)
+                owner.GetModPlayer<DaCapoPlayer>().DaCapoImmune = DamageType.All;
+                if (projectile.ai[0] < DaCapoTime.FinalDamage)
                 {
                     owner.GetModPlayer<CurtainPlayer>().ShakeScreen = true;
-                    daCapoPlayer.MusicType = 5;
+                    daCapoPlayer.CurrentPlayingMusic = MusicType.Final1;
+                    owner.AddBuff(ModContent.BuffType<DaCapoFinalBuff>(), 2);
                 }
-                else if (projectile.ai[0] < 2060)
+                else if (projectile.ai[0] < DaCapoTime.EndClap)
                 {
                     owner.GetModPlayer<CurtainPlayer>().ShakeScreen = true;
-                    daCapoPlayer.MusicType = 6;
+                    daCapoPlayer.CurrentPlayingMusic = MusicType.Final2;
+                    owner.AddBuff(ModContent.BuffType<DaCapoFinalBuff>(), 2);
                 }
                 else
                 {
-                    daCapoPlayer.MusicType = 7;
+                    daCapoPlayer.CurrentPlayingMusic = MusicType.End;
                 }
 
             }
 
-            if (projectile.ai[0] == 220)    //第一乐章     //150
+            if (projectile.ai[0] == DaCapoTime.Movement1Begin - 120)
+            {
+                Projectile.NewProjectile(owner.Bottom + new Vector2(-100, 5), Vector2.Zero, ModContent.ProjectileType<FirstChair>(), 0, 0, owner.whoAmI);
+            }
+            if (projectile.ai[0] == DaCapoTime.Movement1Begin)    //第一乐章     //150
             {
                 CurtainPlayer.SetTitle(1);
                 Projectile.NewProjectile(owner.Center, Vector2.Zero, ModContent.ProjectileType<MusicRing1>(), projectile.damage, 0, owner.whoAmI);
-                Projectile.NewProjectile(owner.Bottom + new Vector2(-100, 0), Vector2.Zero, ModContent.ProjectileType<FirstChair>(), 0, 0, owner.whoAmI);
             }
-            if (projectile.ai[0] == 620)    //第二乐章
+            if (projectile.ai[0] == DaCapoTime.Movement2Begin - 120)
+            {
+                Projectile.NewProjectile(owner.Bottom + new Vector2(100, 5), Vector2.Zero, ModContent.ProjectileType<SecondChair>(), 0, 0, owner.whoAmI);
+            }
+            if (projectile.ai[0] == DaCapoTime.Movement2Begin)    //第二乐章
             {
                 CurtainPlayer.SetTitle(2);
                 Projectile.NewProjectile(owner.Center, Vector2.Zero, ModContent.ProjectileType<MusicRing2>(), projectile.damage, 0, owner.whoAmI);
-                Projectile.NewProjectile(owner.Bottom + new Vector2(100, 0), Vector2.Zero, ModContent.ProjectileType<SecondChair>(), 0, 0, owner.whoAmI);
             }
-            if (projectile.ai[0] == 1020)     //第三乐章
+            if (projectile.ai[0] == DaCapoTime.Movement3Begin - 120)
+            {
+                Projectile.NewProjectile(owner.Bottom + new Vector2(-60, 5), Vector2.Zero, ModContent.ProjectileType<ThirdChair>(), 0, 0, owner.whoAmI);
+            }
+            if (projectile.ai[0] == DaCapoTime.Movement3Begin)     //第三乐章
             {
                 CurtainPlayer.SetTitle(3);
                 Projectile.NewProjectile(owner.Center, Vector2.Zero, ModContent.ProjectileType<MusicRing3>(), projectile.damage, 0, owner.whoAmI);
-                Projectile.NewProjectile(owner.Bottom + new Vector2(-200, 0), Vector2.Zero, ModContent.ProjectileType<ThirdChair>(), 0, 0, owner.whoAmI);
             }
-            if (projectile.ai[0] == 1420)       //第四乐章
+            if (projectile.ai[0] == DaCapoTime.Movement4Begin - 120)
+            {
+                Projectile.NewProjectile(owner.Bottom + new Vector2(60, 5), Vector2.Zero, ModContent.ProjectileType<FourthChair>(), 0, 0, owner.whoAmI);
+            }
+            if (projectile.ai[0] == DaCapoTime.Movement4Begin)       //第四乐章
             {
                 CurtainPlayer.SetTitle(4);
                 Projectile.NewProjectile(owner.Center, Vector2.Zero, ModContent.ProjectileType<MusicRing4>(), projectile.damage, 0, owner.whoAmI);
-                Projectile.NewProjectile(owner.Bottom + new Vector2(200, 0), Vector2.Zero, ModContent.ProjectileType<FourthChair>(), 0, 0, owner.whoAmI);
             }
-            if (projectile.ai[0] == 1820)         //终曲（出现字幕）1
+            if (projectile.ai[0] == DaCapoTime.FinalBegin)         //终曲（出现字幕）1
             {
                 CurtainPlayer.SetTitle(5);
                 //CurtainPlayer.Finale(owner);
+                BaseChair.EnterFinal();
             }
-            if (projectile.ai[0] == 1940)           //音乐开始扭曲2
+            if (projectile.ai[0] == DaCapoTime.FinalDamage)           //音乐开始扭曲2
             {
                 CurtainPlayer.Finale(owner);
             }
-            if (projectile.ai[0] == 1943)           //最终伤害
+            if (projectile.ai[0] == DaCapoTime.FinalDamage + 3)           //最终伤害
             {
-                int protmp = Projectile.NewProjectile(Main.screenPosition, Vector2.Zero, ModContent.ProjectileType<MusicFinalDamage>(), projectile.damage * 40, 0, owner.whoAmI);
+                int protmp = Projectile.NewProjectile(Main.screenPosition, Vector2.Zero, ModContent.ProjectileType<MusicFinalDamage>(), projectile.damage * 60, 0, owner.whoAmI);
                 Main.projectile[protmp].width = Main.screenWidth;
                 Main.projectile[protmp].height = Main.screenHeight;
             }
-            if (projectile.ai[0] == 2060)          //闭幕
+            if (projectile.ai[0] == DaCapoTime.EndClap)          //闭幕
             {
                 CurtainPlayer.FinaleCurtain(owner);
             }
-            if (projectile.ai[0] == 2260 - 10)           //（提前十帧结束）
+            if (projectile.ai[0] == DaCapoTime.End - 10)           //（提前十帧结束）
             {
                 projectile.Kill();
                 owner.itemTime = 10;

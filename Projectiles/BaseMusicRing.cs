@@ -39,6 +39,7 @@ namespace DaCapo.Projectiles
             projectile.timeLeft = 9999;
             projectile.hostile = false;
             projectile.friendly = true;
+            Lighting.AddLight(projectile.Center, 0.9f, 0.9f, 0.9f);
             Player owner = Main.player[projectile.owner];
             if (projectile.ai[0] != 2)
             {
@@ -50,7 +51,7 @@ namespace DaCapo.Projectiles
                 {
                     projectile.ai[0] = 3;
                 }
-                if (!owner.channel)
+                if (!DaCapoPlayer.RightClickChannel(owner))
                 {
                     projectile.ai[0] = 3;
                 }
@@ -111,8 +112,8 @@ namespace DaCapo.Projectiles
 
         public override bool PreDraw(SpriteBatch spriteBatch, Color lightColor)
         {
-            spriteBatch.End();
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointWrap, DepthStencilState.Default, RasterizerState.CullNone, null, Main.GameViewMatrix.EffectMatrix);
+            Main.spriteBatch.End();
+            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.AnisotropicClamp, DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
             Texture2D tex = Main.projectileTexture[projectile.type];
             if (projectile.ai[0] == 2 && projectile.ai[1] > 30)
             {
@@ -131,7 +132,7 @@ namespace DaCapo.Projectiles
                 spriteBatch.Draw(tex, projectile.Center - Main.screenPosition, null, Color.White, projectile.rotation, tex.Size() / 2, projectile.scale * RangeScale, SpriteEffects.None, 0);
             }
             Main.spriteBatch.End();
-            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.instance.Rasterizer, null, Main.GameViewMatrix.EffectMatrix);
+            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.AnisotropicClamp, DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
             return false;
         }
 
@@ -152,6 +153,12 @@ namespace DaCapo.Projectiles
         {
             return false;
         }
+
+        public override bool? CanHitNPC(NPC target)
+        {
+            return true;
+        }
+
         public override void OnHitNPC(NPC target, int damage, float knockback, bool crit)
         {
             if (MaxMusicRing(projectile.owner) > 0 && MaxMusicRing(projectile.owner) <= 3)

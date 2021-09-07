@@ -105,8 +105,8 @@ namespace DaCapo.Projectiles
             Texture2D tex = Main.projectileTexture[projectile.type];
             Rectangle rectangle = new Rectangle(0, tex.Height / 9 * projectile.frame, tex.Width, tex.Height / 9);
             SpriteEffects SP = owner.direction < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
-            spriteBatch.End();
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointWrap, DepthStencilState.Default, RasterizerState.CullNone, null, Main.GameViewMatrix.EffectMatrix);
+            Main.spriteBatch.End();
+            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.AnisotropicClamp, DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
             if (owner.direction < 0)
             {
                 float r = projectile.rotation + MathHelper.Pi;
@@ -126,8 +126,8 @@ namespace DaCapo.Projectiles
                 spriteBatch.Draw(tex, projectile.Center - Main.screenPosition, rectangle, Color.White, projectile.rotation, rectangle.Size() / 2, projectile.scale * 0.6f, SP, 0);
             }
             Main.spriteBatch.End();
-            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.instance.Rasterizer, null, Main.GameViewMatrix.EffectMatrix);
-
+            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.AnisotropicClamp, DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
+            
             if (projectile.ai[0] == 1)
             {
                 tex = mod.GetTexture("Projectiles/DaCapoEnd");

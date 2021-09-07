@@ -7,21 +7,8 @@ namespace DaCapo.UI
 {
     internal class CurtainUI : UIState
     {
-        // For this bar we'll be using a frame texture and then a gradient inside bar, as it's one of the more simpler approaches while still looking decent.
-        // Once this is all set up make sure to go and do the required stuff for most UI's in the Mod class.
-        private UIElement area;
-
         public override void OnInitialize()
         {
-            // Create a UIElement for all the elements to sit on top of, this simplifies the numbers as nested elements can be positioned relative to the top left corner of this element. 
-            // UIElement is invisible and has no padding. You can use a UIPanel if you wish for a background.
-            area = new UIElement();
-            area.Left.Set(20, 1f); // Place the resource bar to the left of the hearts.
-            area.Top.Set(30, 0f); // Placing it just a bit below the top of the screen.
-            area.Width.Set(20, 0f); // We will be placing the following 2 UIElements within this 182x60 area.
-            area.Height.Set(20, 0f);
-
-            Append(area);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -70,7 +57,6 @@ namespace DaCapo.UI
             {
                 if (modplayer.FinaleTimer > 100)
                 {
-                    //Main.NewText("a");
                     float k = 2 - modplayer.FinaleTimer / 100f;
                     DrawHalfCurtain(spriteBatch, k, Color.White);
                     Texture2D tex1 = DaCapo.Instance.GetTexture("UI/CurtainLeft");
@@ -80,7 +66,6 @@ namespace DaCapo.UI
                 }
                 else
                 {
-                    //Main.NewText("b");
                     float progress = modplayer.FinaleTimer / 100;
                     DrawFullCurtain(spriteBatch, 0, progress, Color.White);
 

@@ -25,11 +25,9 @@ namespace DaCapo
             }
             ShakeScreen = false;
         }
+
         public override void UpdateBiomeVisuals()
         {
-            
-            //Main.NewText("FinaleTiner: " + FinaleTimer);
-            //Main.NewText("Progress: " + Progress);
             if (CanChange) 
             {
                 Active = CheckPlayer();
@@ -84,12 +82,16 @@ namespace DaCapo
         }
 
 
-
+        /// <summary>
+        /// 玩家是否在演奏
+        /// </summary>
+        /// <returns></returns>
 
         public bool CheckPlayer()
         {
-            return player.HeldItem.type == ModContent.ItemType<DaCapoItem>() && player.channel && AnyDaCapo();
+            return player.HeldItem.type == ModContent.ItemType<DaCapoItem>() && DaCapoPlayer.RightClickChannel(player) && AnyDaCapo();
         }
+
 
         private bool AnyDaCapo()
         {
@@ -105,17 +107,30 @@ namespace DaCapo
             }
             return false;
         }
+
+        /// <summary>
+        /// 显示指定标题
+        /// </summary>
+        /// <param name="title"></param>
         public static void SetTitle(int title)
         {
             Main.LocalPlayer.GetModPlayer<CurtainPlayer>().Title = title;
             Main.LocalPlayer.GetModPlayer<CurtainPlayer>().TitleTimer = 90;
         } 
         
+        /// <summary>
+        /// 拉下序幕
+        /// </summary>
+        /// <param name="player"></param>
         public static void FinaleCurtain(Player player)
         {
             player.GetModPlayer<CurtainPlayer>().FinaleTimer = 200;   
         }
 
+        /// <summary>
+        /// 终曲扩散
+        /// </summary>
+        /// <param name="player"></param>
         public static void Finale(Player player)
         {
             foreach (Projectile projectile in Main.projectile)

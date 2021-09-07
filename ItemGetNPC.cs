@@ -10,20 +10,7 @@ namespace DaCapo
     public class ItemGetNPC : GlobalNPC
     {
         public override bool InstancePerEntity => true;
-        public bool CanDropGift = true;
-        public override void PostAI(NPC npc)       //月总用ai3标记眼睛
-        {
-            if (npc.type == NPCID.MoonLordCore)
-            {
-                if (npc.HasPlayerTarget)
-                {
-                    if (Main.player[npc.target].immune)
-                    {
-                        Failed(npc);
-                    }
-                }
-            }
-        }
+        public bool CanDropGift = true;      //月总用ai3标记眼睛
         public override void OnHitByItem(NPC npc, Player player, Item item, int damage, float knockback, bool crit)
         {
             if (item.type != ItemID.TheAxe || damage > 500)
@@ -43,6 +30,7 @@ namespace DaCapo
         }
         public override void OnHitByProjectile(NPC npc, Projectile projectile, int damage, float knockback, bool crit)
         {
+            if (projectile.npcProj) return;
             if ((projectile.type != ProjectileID.EighthNote && projectile.type != ProjectileID.QuarterNote && projectile.type != ProjectileID.TiedEighthNote && projectile.type != ProjectileID.SpectreWrath) ||
             damage > 500)
             {

@@ -13,6 +13,7 @@ namespace DaCapo
 		public int StaggerResistance = 0;
 		public int StaggerResistanceRegen = 0;
 		public int SavedImmune = 114514;
+
 		public override void PostAI(NPC npc)
 		{
             if (StaggerResistanceRegen > 0)
@@ -170,5 +171,6 @@ namespace DaCapo
 			return true;
         }
 		*/
+
     }
 }

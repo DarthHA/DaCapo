@@ -11,7 +11,6 @@ namespace DaCapo.Projectiles
         {
             DisplayName.SetDefault("MusicFinalDamage");
             DisplayName.AddTranslation(GameCulture.Chinese, "终曲伤害");
-
         }
 
         public override void SetDefaults()  //512  512   16  0.75
@@ -51,6 +50,10 @@ namespace DaCapo.Projectiles
             }
         }
 
+        public override bool? CanHitNPC(NPC target)
+        {
+            return true;
+        }
 
         public override bool ShouldUpdatePosition()
         {

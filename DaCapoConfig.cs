@@ -7,6 +7,18 @@ namespace DaCapo
 {
     public class DaCapoConfig : ModConfig
     {
+        public override bool Autoload(ref string name)
+        {
+            if (Language.ActiveCulture == GameCulture.Chinese)
+            {
+                name = "配置";
+            }
+            else
+            {
+                name = "Config";
+            }
+            return true;
+        }
         public override ConfigScope Mode => ConfigScope.ServerSide;
 
         [DefaultValue(true)]
@@ -26,8 +38,8 @@ namespace DaCapo
         {
             DaCapo.config = this;
             ModTranslation modTranslation = DaCapo.Instance.CreateTranslation("UseBGM");
-            modTranslation.SetDefault("Angela 3 will play during the performance");
-            modTranslation.AddTranslation(GameCulture.Chinese, "演奏时播放Angela 3");
+            modTranslation.SetDefault("Angela Battle 3 will play during the performance");
+            modTranslation.AddTranslation(GameCulture.Chinese, "演奏时播放Angela Battle 3");
             DaCapo.Instance.AddTranslation(modTranslation);
         }
 

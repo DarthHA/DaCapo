@@ -8,6 +8,9 @@ using Microsoft.Xna.Framework;
 using DaCapo.UI;
 using DaCapo.Projectiles;
 using Microsoft.Xna.Framework.Audio;
+using static DaCapo.DaCapoPlayer;
+using Microsoft.Xna.Framework.Graphics;
+using Terraria.ID;
 
 namespace DaCapo
 {
@@ -17,36 +20,33 @@ namespace DaCapo
         public static DaCapoConfig config;
         private UserInterface _CurtainUIInterface;
         internal CurtainUI _CurtainUI;
-        public static bool SecondBGM;
+
+        public static EnvirSound SecondBGM;
+        public static bool SoundLoaded = false;
+
+        public static Effect ChairEffect;
+
         public DaCapo()
         {
             Instance = this;
         }
         public override void Load()
         {
-            Filters.Scene["DaCapo:DaCapoSky"] = new Filter(new DaCapoSkyScreenShaderData("FilterMiniTower").UseColor(0.9f, 0.9f, 0.9f).UseOpacity(0.2f), EffectPriority.VeryHigh);
+            Filters.Scene["DaCapo:DaCapoSky"] = new Filter(new DaCapoSkyScreenShaderData("FilterMiniTower").UseColor(1.0f, 1.0f, 1.0f).UseOpacity(0.0f), EffectPriority.VeryHigh);
             SkyManager.Instance["DaCapo:DaCapoSky"] = new DaCapoSky();
 
             _CurtainUI = new CurtainUI();
             _CurtainUIInterface = new UserInterface();
             _CurtainUIInterface.SetState(_CurtainUI);
             On.Terraria.Projectile.Kill += new On.Terraria.Projectile.hook_Kill(KillHook);
-            On.Terraria.Main.PlaySound_int_int_int_int_float_float += new On.Terraria.Main.hook_PlaySound_int_int_int_int_float_float(PlaySoundHook);
 
+            SecondBGM = new EnvirSound(Instance.GetSound("Sounds/Angela3"), 0.3f);
+            SoundLoaded = true;
+
+            ChairEffect = GetEffect("Effects/Content/ChairEffect");
 
         }
 
-        public static SoundEffectInstance PlaySoundHook(On.Terraria.Main.orig_PlaySound_int_int_int_int_float_float orig,int type, int x = -1, int y = -1, int Style = 1, float volumeScale = 1f, float pitchOffset = 0f)
-        {
-            if (SecondBGM)
-            {
-                if (type == 0)
-                {
-                    return null;
-                }
-            }
-            return orig.Invoke(type, x, y, Style, volumeScale, pitchOffset);
-        }
 
         public static void KillHook(On.Terraria.Projectile.orig_Kill orig, Projectile self)
         {
@@ -65,10 +65,8 @@ namespace DaCapo
             orig.Invoke(self);
         }
 
-
         public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
         {
-
             int CurtainUIIndex = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Interface Logic 1"));
             if (CurtainUIIndex != -1)
             {
@@ -84,121 +82,139 @@ namespace DaCapo
             }
         }
 
+        public override void MidUpdatePlayerNPC()
+        {
+            if (Main.musicVolume == 0)
+            {
+                if (SoundLoaded)
+                {
+                    UpdateSecondMusic();
+                }
+            }
+        }
+
         public override void UpdateMusic(ref int music, ref MusicPriority priority)
         {
             if (Main.myPlayer == -1 || Main.gameMenu || !Main.LocalPlayer.active)
             {
-                StopSecondBGM();
+                if (SoundLoaded)
+                {
+                    SecondBGM.QuickStop();
+                }
                 return;
             }
-            if (Main.LocalPlayer.GetModPlayer<DaCapoPlayer>().MusicType >= 0)
+            if (Main.LocalPlayer.GetModPlayer<DaCapoPlayer>().CurrentPlayingMusic > MusicType.None)
             {
                 string path = "Sounds/Music/";
-                switch (Main.LocalPlayer.GetModPlayer<DaCapoPlayer>().MusicType)
+                bool ShouldReplace = false;
+                switch (Main.LocalPlayer.GetModPlayer<DaCapoPlayer>().CurrentPlayingMusic)
                 {
-                    case 0:
+                    case MusicType.Beginning:
                         path += "Clap1";
                         break;
-                    case 1:
-                        if (Main.curMusic != GetSoundSlot(SoundType.Music, path + "Movement1"))
-                        {
-                            Main.music[Main.curMusic].Stop(AudioStopOptions.Immediate);
-                        }
+                    case MusicType.Movement1:
                         path += "Movement1";
+                        ShouldReplace = true;
                         break;
-                    case 2:
+                    case MusicType.Movement2:
                         path += "Movement2";
                         break;
-                    case 3:
+                    case MusicType.Movement3:
                         path += "Movement3";
+                        ShouldReplace = true;
                         break;
-                    case 4:
+                    case MusicType.Movement4:
                         path += "Movement4";
+                        ShouldReplace = true;
                         break;
-                    case 5:
+                    case MusicType.Final1:
                         path += "Final1";
+                        ShouldReplace = true;
                         break;
-                    case 6:
-                        if (Main.curMusic != GetSoundSlot(SoundType.Music, path + "Final2"))
-                        {
-                            Main.music[Main.curMusic].Stop(AudioStopOptions.Immediate);
-                        }
+                    case MusicType.Final2:
                         path += "Final2";
+                        ShouldReplace = true;
                         break;
-                    case 7:
+                    case MusicType.End:
                         path += "Clap2";
+                        ShouldReplace = true;
                         break;
                     default:
                         break;
                 }
 
+                if (ShouldReplace && Main.curMusic != -1)
+                {
+                    if (Main.curMusic != GetSoundSlot(SoundType.Music, path))
+                    {
+                        if (Main.music[Main.curMusic].IsPlaying)
+                        {
+                            Main.music[Main.curMusic].Stop(AudioStopOptions.Immediate);
+                        }
+                    }
+                }
+
                 music = GetSoundSlot(SoundType.Music, path);
 
-                if (Main.curMusic == GetSoundSlot(SoundType.Music,"Sounds/Music/Final2"))
+                if (ShouldReplace && Main.curMusic != -1)
                 {
                     Main.musicFade[Main.curMusic] = 1;
-                }
-                if (Main.curMusic == GetSoundSlot(SoundType.Music, "Sounds/Music/Clap2"))
-                {
-                    Main.musicFade[GetSoundSlot(SoundType.Music, "Sounds/Music/Final2")] = Utils.Clamp(Main.musicFade[GetSoundSlot(SoundType.Music, "Sounds/Music/Final2")] - 0.05f, 0, 1);
-                    Main.musicFade[Main.curMusic] = 1;
+                    if (Main.curMusic == GetSoundSlot(SoundType.Music, "Sounds/Music/Clap2"))
+                    {
+                        Main.musicFade[GetSoundSlot(SoundType.Music, "Sounds/Music/Final2")] = Utils.Clamp(Main.musicFade[GetSoundSlot(SoundType.Music, "Sounds/Music/Final2")] - 0.05f, 0, 1);
+                    }
                 }
 
                 priority = MusicPriority.BossHigh;
             }
-            UpdateSecondMusic();
+
+            if (SoundLoaded)
+            {
+                UpdateSecondMusic();
+            }
+
         }
+
         public override void Unload()
         {
-            StopSecondBGM();
             SkyManager.Instance["DaCapo:DaCapoSky"].Deactivate();
             config = null;
+            ChairEffect = null;
+            SecondBGM = null;
+            SoundLoaded = false;
             Instance = null;
         }
 
-        public static void PlaySecondBGM()
-        {
-            if (SecondBGM) return;
-            if (Main.soundInstanceDig[2] != null)
-            {
-                Main.soundInstanceDig[2].Stop();
-            }
-            SecondBGM = true;
-            Main.soundInstanceDig[2] = Instance.GetSound("Sounds/Angela3").CreateInstance();
-            Main.soundInstanceDig[2].Pan = 0;
-            Main.soundInstanceDig[2].Pitch = 0;
-            Main.soundInstanceDig[2].IsLooped = true;
-            Main.soundInstanceDig[2].Play();
-        }
-        public static void StopSecondBGM()
-        {
-            if (!SecondBGM) return;
-            SecondBGM = false;
-            Main.soundInstanceDig[2].Stop();
-        }
         public void UpdateSecondMusic()
         {
             if (!config.UseBGM)
             {
-                StopSecondBGM();
+                SecondBGM.QuickStop();
                 return;
             }
             if (Main.LocalPlayer.GetModPlayer<CurtainPlayer>().Active||
                 Main.LocalPlayer.GetModPlayer<CurtainPlayer>().FinaleTimer > 0)
             {
-                PlaySecondBGM();
+                SecondBGM.QuickBegin();
             }
             else
             {
-                StopSecondBGM();
+                SecondBGM.QuickStop();
             }
-
-            if (SecondBGM)
-            {
-                Main.soundInstanceDig[2].Volume = Main.musicVolume * 0.3f;
-            }
+            SecondBGM.Update();
         }
-        
+
+        /*
+        public override void AddRecipes()
+        {
+            ModRecipe recipe = new ModRecipe(this);
+            recipe.AddIngredient(ItemID.PlatinumBar);
+            recipe.SetResult(ItemID.PlatinumCoin, 1);
+            recipe.AddTile(TileID.Furnaces);
+            recipe.AddRecipe();
+        }
+        */
+
     }
 
     
