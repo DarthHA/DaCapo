@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "Dru/mK1nVNImtDl9ZA9J9UCj6sRd6XpD03NhN86liVOXuRJyXmQuSENrHBblCzavBSX+2G9xJpwHcac4w8BYPA==",
+  "dgSpecHash": "SMggH63YUswR/Dn0v/jCJlKmUfzkpRgktgM1eFwJ4jYPZ9BM7Yjo4F5k2Y17ZyOrgI7pYR1qxOg/j8V+zTpw9g==",
   "success": true,
   "projectFilePath": "C:\\Users\\Administrator\\Documents\\My Games\\Terraria\\ModLoader\\Mod Sources\\DaCapo\\DaCapo.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\Administrator\\.nuget\\packages\\tmodloader.codeassist\\0.1.1\\tmodloader.codeassist.0.1.1.nupkg.sha512"
+    "C:\\Users\\Administrator\\.nuget\\packages\\tmodloader.codeassist\\0.1.2\\tmodloader.codeassist.0.1.2.nupkg.sha512"
   ],
   "logs": []
 }
